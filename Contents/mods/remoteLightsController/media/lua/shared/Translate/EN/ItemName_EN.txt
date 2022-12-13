@@ -1,0 +1,15 @@
+ItemName_EN = {
+    ItemName_RemoteLightsController.RemoteLightsController = "Lights Controller",
+    ItemName_RemoteLightsController.RGBRemoteLightsController = "RGB Lights Controller",
+    ItemName_RemoteLightsController.LightBulbRGBRemoteControlled = "Remote Controlled RGB Light Bulb",
+    ItemName_RemoteLightsController.LightBulbRemoteControlled = "Remote Controlled Light Bulb",
+    ItemName_RemoteLightsController.LightBulbBlueRemoteControlled = "Remote Controlled Blue Light Bulb",
+    ItemName_RemoteLightsController.LightBulbCyanRemoteControlled = "Remote Controlled Cyan Light Bulb",
+    ItemName_RemoteLightsController.LightBulbGreenRemoteControlled = "Remote Controlled Green Light Bulb",
+    ItemName_RemoteLightsController.LightBulbMagentaRemoteControlled = "Remote Controlled Magenta Light Bulb",
+    ItemName_RemoteLightsController.LightBulbOrangeRemoteControlled = "Remote Controlled Orange Light Bulb",
+    ItemName_RemoteLightsController.LightBulbPinkRemoteControlled = "Remote Controlled Pink Light Bulb",
+    ItemName_RemoteLightsController.LightBulbPurpleRemoteControlled = "Remote Controlled Purple Light Bulb",
+    ItemName_RemoteLightsController.LightBulbRedRemoteControlled = "Remote Controlled Red Light Bulb",
+    ItemName_RemoteLightsController.LightBulbYellowRemoteControlled = "Remote Controlled Yellow Light Bulb",
+}

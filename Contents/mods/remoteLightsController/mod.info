@@ -1,0 +1,4 @@
+name=Remote Lights Controller
+id=partyLightsController
+poster=poster.png
+description=Adds a findable and craftable remote and light bulbs to toggle lights on or off and have light shows for parties.

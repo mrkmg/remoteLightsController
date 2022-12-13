@@ -1,0 +1,87 @@
+module Base {
+    model RemoteLC_Controller {
+        mesh = WorldItems/RemoteLC_Controller,
+        texture = WorldItems/Texture_RemoteLC_Controller,
+        scale = 0.5,
+    }
+
+    model RemoteLC_RGBController {
+        mesh = WorldItems/RemoteLC_RGBController,
+        texture = WorldItems/Texture_RemoteLC_Controller,
+        scale = 0.5,
+    }
+
+    model RemoteLC_ControllerG {
+        mesh = WorldItems/RemoteLC_ControllerG,
+        texture = WorldItems/Texture_RemoteLC_Controller,
+        scale = 0.75,
+    }
+
+    model RemoteLC_RGBControllerG {
+        mesh = WorldItems/RemoteLC_RGBControllerG,
+        texture = WorldItems/Texture_RemoteLC_Controller,
+        scale = 0.75,
+    }
+
+    model FemaleBody
+    {
+		attachment rlc_belt_left
+		{
+			offset = 0.0000 0.0900 0.0000,
+			rotate = 90.0000 83.0000 -90.0000,
+			bone = Bip01_Pelvis,
+		}
+
+		attachment rlc_belt_right
+		{
+			offset = 0.0000 -0.0900 0.0000,
+			rotate = 90.0000 -83.0000 90.0000,
+			bone = Bip01_Pelvis,
+		}
+
+		attachment rlc2_belt_left
+		{
+			offset = 0.0000 0.0900 0.0000,
+			rotate = 90.0000 83.0000 -90.0000,
+			bone = Bip01_Pelvis,
+		}
+
+		attachment rlc2_belt_right
+		{
+			offset = 0.0000 -0.0900 0.0000,
+			rotate = 90.0000 -83.0000 90.0000,
+			bone = Bip01_Pelvis,
+		}
+    }
+
+    model MaleBody
+	{
+		attachment rlc_belt_left
+		{
+			offset = 0.0000 0.1000 0.0000,
+			rotate = 90.0000 83.0000 -90.0000,
+			bone = Bip01_Pelvis,
+		}
+
+		attachment rlc_belt_right
+		{
+			offset = 0.0000 -0.1000 0.0000,
+			rotate = 90.0000 -83.0000 90.0000,
+			bone = Bip01_Pelvis,
+		}
+
+		attachment rlc2_belt_left
+		{
+			offset = 0.0000 0.1000 0.0000,
+			rotate = 90.0000 83.0000 -90.0000,
+			bone = Bip01_Pelvis,
+		}
+
+		attachment rlc2_belt_right
+		{
+			offset = 0.0000 -0.1000 0.0000,
+			rotate = 90.0000 -83.0000 90.0000,
+			bone = Bip01_Pelvis,
+		}
+    }
+}

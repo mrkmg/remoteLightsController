@@ -1,0 +1,177 @@
+module RemoteLightsController {
+    imports
+    {
+        Base,
+    }
+
+    item RemoteLightsController {
+        Weight = 0.3,
+        Type = Normal,
+        DisplayName = Lights Controller,
+        DisplayCategory = Electronics,
+        OnCreate = RemoteLC_Utilities.InitializeController,
+        
+        Icon = RemoteLC_Controller,
+        StaticModel = RemoteLC_Controller,
+        WorldStaticModel = RemoteLC_ControllerG,
+        AttachmentType = RLC,
+        
+        primaryAnimMask = HoldingTorchRight,
+        secondaryAnimMask = HoldingTorchLeft,
+    }
+
+    item RGBRemoteLightsController {
+        Weight = 0.3,
+        Type = Normal,
+        DisplayName = RGB Lights Controller,
+        DisplayCategory = Electronics,
+        OnCreate = RemoteLC_Utilities.InitializeController,
+        
+        Icon = RemoteLC_RGBController,
+        StaticModel = RemoteLC_RGBController,
+        WorldStaticModel = RemoteLC_RGBControllerG,
+        AttachmentType = RLC2,
+        
+        primaryAnimMask = HoldingTorchRight,
+        secondaryAnimMask = HoldingTorchLeft,
+    }
+
+    item LightBulbRGBRemoteControlled
+    {
+        DisplayCategory = Electronics,
+        Weight = 0.1,
+        Type = Normal,
+        DisplayName = Remote Controlled RGB Light Bulb,
+        Icon = LightBulb,
+        ConditionMax = 100,
+        WorldStaticModel = LightBulb,
+    }
+
+    item LightBulbRemoteControlled
+    {
+        DisplayCategory = Electronics,
+        Weight = 0.1,
+        Type = Normal,
+        DisplayName = Remote Controlled Light Bulb,
+        Icon = LightBulb,
+        ConditionMax = 100,
+        WorldStaticModel = LightBulb,
+    }
+
+    item LightBulbRedRemoteControlled
+    {
+        DisplayCategory = Electronics,
+        Weight = 0.1,
+        Type = Normal,
+        DisplayName = Remote Controlled Red Light Bulb,
+        Icon = LightBulb,
+        ColorRed = 255,
+        ColorGreen = 0,
+        ColorBlue = 0,
+        WorldStaticModel = LightBulbRed,
+    }
+
+    item LightBulbGreenRemoteControlled
+    {
+        DisplayCategory = Electronics,
+        Weight = 0.1,
+        Type = Normal,
+        DisplayName = Remote Controlled Green Light Bulb,
+        Icon = LightBulb,
+        ColorRed = 0,
+        ColorGreen = 255,
+        ColorBlue = 0,
+        WorldStaticModel = LightBulbGreen,
+    }
+
+    item LightBulbBlueRemoteControlled
+    {
+        DisplayCategory = Electronics,
+        Weight = 0.1,
+        Type = Normal,
+        DisplayName = Remote Controlled Blue Light Bulb,
+        Icon = LightBulb,
+        ColorRed = 0,
+        ColorGreen = 0,
+        ColorBlue = 255,
+        WorldStaticModel = LightBulbBlue,
+    }
+
+    item LightBulbYellowRemoteControlled
+    {
+        DisplayCategory = Electronics,
+        Weight = 0.1,
+        Type = Normal,
+        DisplayName = Remote Controlled Yellow Light Bulb,
+        Icon = LightBulb,
+        ColorRed = 255,
+        ColorGreen = 255,
+        ColorBlue = 0,
+        WorldStaticModel = LightBulbYellow,
+    }
+
+    item LightBulbCyanRemoteControlled
+    {
+        DisplayCategory = Electronics,
+        Weight = 0.1,
+        Type = Normal,
+        DisplayName = Remote Controlled Cyan Light Bulb,
+        Icon = LightBulb,
+        ColorRed = 0,
+        ColorGreen = 255,
+        ColorBlue = 255,
+        WorldStaticModel = LightBulbCyan,
+    }
+
+    item LightBulbMagentaRemoteControlled
+    {
+        DisplayCategory = Electronics,
+        Weight = 0.1,
+        Type = Normal,
+        DisplayName = Remote Controlled Magenta Light Bulb,
+        Icon = LightBulb,
+        ColorRed = 255,
+        ColorGreen = 0,
+        ColorBlue = 255,
+        WorldStaticModel = LightBulbMagenta,
+    }
+
+    item LightBulbOrangeRemoteControlled
+    {
+        DisplayCategory = Electronics,
+        Weight = 0.1,
+        Type = Normal,
+        DisplayName = Remote Controlled Orange Light Bulb,
+        Icon = LightBulb,
+        ColorRed = 255,
+        ColorGreen = 128,
+        ColorBlue = 0,
+        WorldStaticModel = LightBulbOrange,
+    }
+
+    item LightBulbPurpleRemoteControlled
+    {
+        DisplayCategory = Electronics,
+        Weight = 0.1,
+        Type = Normal,
+        DisplayName = Remote Controlled Purple Light Bulb,
+        Icon = LightBulb,
+        ColorRed = 128,
+        ColorGreen = 0,
+        ColorBlue = 255,
+        WorldStaticModel = LightBulbPurple,
+    }
+
+    item LightBulbPinkRemoteControlled
+    {
+        DisplayCategory = Electronics,
+        Weight = 0.1,
+        Type = Normal,
+        DisplayName = Remote Controlled Pink Light Bulb,
+        Icon = LightBulb,
+        ColorRed = 255,
+        ColorGreen = 20,
+        ColorBlue = 147,
+        WorldStaticModel = LightBulbPink,
+    }
+}
