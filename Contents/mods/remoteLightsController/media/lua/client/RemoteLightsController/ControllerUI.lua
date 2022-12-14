@@ -54,6 +54,31 @@ local function getColors(numColors, numBrights)
     return colors
 end
 
+-- Make the color picker not render borders on the boxes
+-- local function colorPickerRenderOverride(self)
+--     ISPanelJoypad.render(self)
+--     for i,color in ipairs(self.colors) do
+--         local col = (i-1) % self.columns
+--         local row = math.floor((i-1) / self.columns)
+--         self:drawRect(self.borderSize + col * self.buttonSize, self.borderSize + row * self.buttonSize, self.buttonSize, self.buttonSize, 1.0, color.r, color.g, color.b)
+--     end
+--     -- for col=1,self.columns do
+--     --     self:drawRect(self.borderSize + col * self.buttonSize, self.borderSize, 1, self.buttonSize * self.rows, 1.0, 0.0, 0.0, 0.0)
+--     -- end
+--     -- for row=1,self.rows do
+--     --     self:drawRect(self.borderSize, self.borderSize + row * self.buttonSize, self.buttonSize * self.columns, 1, 1.0, 0.0, 0.0, 0.0)
+--     -- end
+
+--     local col = (self.index-1) % self.columns
+--     local row = math.floor((self.index-1) / self.columns)
+--     self:drawRectBorder(self.borderSize + col * self.buttonSize, self.borderSize + row * self.buttonSize, self.buttonSize + 1, self.buttonSize + 1, 1.0, 1.0, 1.0, 1.0)
+
+--     if self.joyfocus then
+--         self:drawRectBorder(0, -self:getYScroll(), self:getWidth(), self:getHeight(), 0.4, 0.2, 1.0, 1.0);
+--         self:drawRectBorder(1, 1-self:getYScroll(), self:getWidth()-2, self:getHeight()-2, 0.4, 0.2, 1.0, 1.0);
+--     end
+-- end
+
 function RemoteLC_ControllerUI:initialise()
     self.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
     self.backgroundColor = {r=0, g=0, b=0, a=1}
@@ -256,6 +281,7 @@ function RemoteLC_ControllerUI:initialise()
         self.colorPicker = ISColorPicker:new(0, 0, nil)
         self.colorPicker:initialise()
         self.colorPicker.keepOnScreen = true
+        self.colorPicker.buttonSize = 20
         self.colorPicker:setColors(colors, cols, rows)
         self.colorPicker.pickedTarget = self
         self.colorPicker:setPickedFunc(RemoteLC_ControllerUI.setColor)
@@ -263,6 +289,7 @@ function RemoteLC_ControllerUI:initialise()
         self.colorPicker.removeSelf = function() end -- we will close when needed
         self.colorPicker.otherFct = true
         self.colorPicker.originalOnMouseUp = self.colorPicker.onMouseUp
+        -- self.colorPicker.render = colorPickerRenderOverride
         self.colorPicker.onMouseUp = function(self, dx, dy) -- prevents choosing color when not clicking on a color
             local x = self:getMouseX()
             local y = self:getMouseY()
@@ -288,33 +315,34 @@ function RemoteLC_ControllerUI:initialise()
         local colorSliderTop = self.colorPicker.height + 2
         local colorSliderLeft = self.colorPicker.borderSize
         local colorSliderWidth = self.colorPicker.width - self.colorPicker.borderSize * 2
+        local colorSliderHeight = 10
 
-        self.colorSliderR = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, BUTTON_HEIGHT, self, function(s,c) s:setColorCustom("r", c/100) end)
+        self.colorSliderR = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, colorSliderHeight, self, function(s,c) s:setColorCustom("r", c/100) end)
         self.colorSliderR:initialise()
         self.colorSliderR:instantiate()
         self.colorSliderR.sliderColor = {r=0.8, g=0.0, b=0.0, a=1.0}
         self.colorSliderR.sliderMouseOverColor = {r=1.0, g=0.0, b=0.0, a=1.0}
         self.colorSliderR:setDoButtons(false)
         self.colorPicker:addChild(self.colorSliderR)
-        colorSliderTop = colorSliderTop + BUTTON_HEIGHT + ELEMENT_PADDING
+        colorSliderTop = colorSliderTop + colorSliderHeight + ELEMENT_PADDING
 
-        self.colorSliderG = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, BUTTON_HEIGHT, self, function(s,c) s:setColorCustom("g", c/100) end)
+        self.colorSliderG = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, colorSliderHeight, self, function(s,c) s:setColorCustom("g", c/100) end)
         self.colorSliderG:initialise()
         self.colorSliderG:instantiate()
         self.colorSliderG.sliderColor = {r=0.0, g=0.8, b=0.0, a=1.0}
         self.colorSliderG.sliderMouseOverColor = {r=0.0, g=1.0, b=0.0, a=1.0}
         self.colorSliderG:setDoButtons(false)
         self.colorPicker:addChild(self.colorSliderG)
-        colorSliderTop = colorSliderTop + BUTTON_HEIGHT + ELEMENT_PADDING
+        colorSliderTop = colorSliderTop + colorSliderHeight + ELEMENT_PADDING
 
-        self.colorSliderB = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, BUTTON_HEIGHT, self, function(s,c) s:setColorCustom("b", c/100) end)
+        self.colorSliderB = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, colorSliderHeight, self, function(s,c) s:setColorCustom("b", c/100) end)
         self.colorSliderB:initialise()
         self.colorSliderB:instantiate()
         self.colorSliderB.sliderColor = {r=0.2, g=0.2, b=0.9, a=1.0}
         self.colorSliderB.sliderMouseOverColor = {r=0.2, g=0.2, b=1.0, a=1.0}
         self.colorSliderB:setDoButtons(false)
         self.colorPicker:addChild(self.colorSliderB)
-        colorSliderTop = colorSliderTop + BUTTON_HEIGHT + ELEMENT_PADDING
+        colorSliderTop = colorSliderTop + colorSliderHeight + ELEMENT_PADDING
 
         self.colorPicker:setHeight(colorSliderTop + self.colorPicker.borderSize)
     end
@@ -380,7 +408,7 @@ function RemoteLC_ControllerUI:prerender()
         else
             self:drawTextCentre(TEXTS.RGBRemoteLightsController, self:getWidth() / 2, EDGE_PADDING, 1, 1, 1, 1, UIFont.Medium)
         end
-        
+
         topSectionLeft = self.selectColorButton:getX() - SECTION_BORDER_PADDING
         topSectionTop = self.selectColorButton:getY() - ELEMENT_PADDING - FONT_SMALL_HEIGHT - SECTION_BORDER_PADDING
     else
@@ -492,7 +520,7 @@ function RemoteLC_ControllerUI:updateUI()
             break
         end
     end
-    
+
     if self.menuData.isRunning then
         self.toggleOnButton.enable = false
         self.toggleOffButton.enable = false
@@ -659,6 +687,10 @@ function RemoteLC_ControllerUI:setColor(color)
     end
     self.colorPicker.mouseDown = false
     self.controller:setColor(color)
+    self.controller:toggleLights(true)
+    self.colorSliderR:setCurrentValue(color.r * 100)
+    self.colorSliderG:setCurrentValue(color.g * 100)
+    self.colorSliderB:setCurrentValue(color.b * 100)
     self:sendSelectables()
     self:updateUI()
 end
@@ -670,6 +702,7 @@ function RemoteLC_ControllerUI:setColorCustom(component, value)
     local color = {r = self.menuData.color.r, g = self.menuData.color.g, b = self.menuData.color.b, a = self.menuData.color.a}
     color[component] = value
     self.controller:setColor(color)
+    self.colorPicker:setInitialColor(Color.new(color.r, color.g, color.b, color.a))
     self:sendSelectables()
     self:updateUI()
 end

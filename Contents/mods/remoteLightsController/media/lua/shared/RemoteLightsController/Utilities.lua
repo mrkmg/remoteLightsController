@@ -59,11 +59,6 @@ local function getLightDataFromObject(square, object)
     local g = invItem:getColorGreen()
     local b = invItem:getColorBlue()
 
-    print(bulbColor)
-    print(tostring(r))
-    print(tostring(g))
-    print(tostring(b))
-
     return {
         x = square:getX(),
         y = square:getY(),
@@ -203,26 +198,18 @@ function RemoteLC_Utilities.SetLightStateFromData(cell, lightData, state, onlyCl
         return
     end
 
-    local bulbName = light:getBulbItem()
-    if not bulbName then
-        return
-    end
+    if lightData.bulbColor ~= "RGB" then
+        local targetColor = {
+            r = lightData.r * state,
+            g = lightData.g * state,
+            b = lightData.b * state
+        }
 
-    local item = getScriptManager():getItem(bulbName)
-    if not item then
-        return
-    end
-
-    local targetColor = {
-        r = lightData.r * state,
-        g = lightData.g * state,
-        b = lightData.b * state
-    }
-
-    if item.colorRed ~= targetColor.r or item.colorGreen ~= targetColor.g or item.colorBlue ~= targetColor.b then
-        light:setPrimaryR(targetColor.r)
-        light:setPrimaryG(targetColor.g)
-        light:setPrimaryB(targetColor.b)
+        if lightData.r ~= targetColor.r or lightData.g ~= targetColor.g or lightData.b ~= targetColor.b then
+            light:setPrimaryR(targetColor.r)
+            light:setPrimaryG(targetColor.g)
+            light:setPrimaryB(targetColor.b)
+        end
     end
 
     if not isServer() then

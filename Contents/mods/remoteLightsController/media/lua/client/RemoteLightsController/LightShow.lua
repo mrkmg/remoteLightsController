@@ -111,7 +111,6 @@ function RemoteLC_LightShow:update()
     local player = getPlayer()
 
     if self.data.owner and ts - self.data.lastUpdateTsMs > 5000 then -- every 5 seconds send an update to server
-        -- print("Sending light show update to server")
         sendClientCommand(getPlayer(), RemoteLC_Utilities.wireNames.module, RemoteLC_Utilities.wireNames.commands.LightShowUpdate, {self.data.id})
         self.data.lastUpdateTsMs = ts
     end

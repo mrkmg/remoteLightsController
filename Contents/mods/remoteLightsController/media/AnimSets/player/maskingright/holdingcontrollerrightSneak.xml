@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<animNode x_extends="holdingumbrellaright.xml">
+<animNode x_extends="holdingcontrollerright.xml">
 	<m_Name>holdingcontrollerrightSneak</m_Name>
 	<m_AnimName>Bob_Carry_Controller</m_AnimName>
 	<m_Conditions />

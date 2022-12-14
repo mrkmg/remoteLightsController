@@ -236,15 +236,6 @@ end
 
 function RemoteLC_Controller:toggleLights(state, blubColor)
     local modData = self.controller:getModData()
-
-    if type(state) == "boolean" then
-        state = state and 1 or 0
-    end
-
-    if state > 0.001 then
-        state = modData.RemoteLC_Brightness
-    end
-
     local player = getPlayer()
 
     if not RemoteLC_Utilities.IsPlayerNearLightDatas(player, modData.RemoteLC_ScannedLightData) then
@@ -253,11 +244,20 @@ function RemoteLC_Controller:toggleLights(state, blubColor)
     end
 
     local cell = player:getCell()
-    if self.isRGB and state then
-        RemoteLC_Utilities.SetLightsColorFromData(cell, modData.RemoteLC_ScannedLightData, modData.RemoteLC_Color)
-    elseif self.isRGB then
-        RemoteLC_Utilities.SetLightsStateFromData(cell, modData.RemoteLC_ScannedLightData, state)
+
+    if self.isRGB then
+        if state then
+            RemoteLC_Utilities.SetLightsColorFromData(cell, modData.RemoteLC_ScannedLightData, modData.RemoteLC_Color)
+        else
+            RemoteLC_Utilities.SetLightsStateFromData(cell, modData.RemoteLC_ScannedLightData, state)
+        end
     else
+        if type(state) == "boolean" then
+            state = state and 1 or 0
+        end
+        if state > 0.001 then
+            state = modData.RemoteLC_Brightness
+        end
         local matchingLights = {}
         for _, lightData in ipairs(modData.RemoteLC_ScannedLightData) do
             if blubColor == "All" or lightData.bulbColor == blubColor then
