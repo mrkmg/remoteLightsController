@@ -36,9 +36,8 @@ local function handleServerCommand(module, command, args)
         RemoteLC_Utilities.Debug("Error | Unknown command '" .. command .. "'")
         return
     end
-    
+
     CommandHandlers[command](args)
-    
 end
 
 Events.OnServerCommand.Add(handleServerCommand)

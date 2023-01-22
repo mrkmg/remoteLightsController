@@ -199,17 +199,9 @@ function RemoteLC_Utilities.SetLightStateFromData(cell, lightData, state, onlyCl
     end
 
     if lightData.bulbColor ~= "RGB" then
-        local targetColor = {
-            r = lightData.r * state,
-            g = lightData.g * state,
-            b = lightData.b * state
-        }
-
-        if lightData.r ~= targetColor.r or lightData.g ~= targetColor.g or lightData.b ~= targetColor.b then
-            light:setPrimaryR(targetColor.r)
-            light:setPrimaryG(targetColor.g)
-            light:setPrimaryB(targetColor.b)
-        end
+        light:setPrimaryR(lightData.r * state)
+        light:setPrimaryG(lightData.g * state)
+        light:setPrimaryB(lightData.b * state)
     end
 
     if not isServer() then

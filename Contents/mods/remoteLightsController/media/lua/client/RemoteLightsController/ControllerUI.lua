@@ -1,16 +1,11 @@
+require "GravyUI"
+
 RemoteLC_ControllerUI = ISPanelJoypad:derive("RemoteLC_ControllerUI")
 RemoteLC_ControllerUI.instance = {}
 RemoteLC_ControllerUI.messages = {}
 
 local textManager = getTextManager()
-local FONT_SMALL_HEIGHT = textManager:getFontHeight(UIFont.Small)
-local FONT_MEDIUM_HEIGHT = textManager:getFontHeight(UIFont.Medium)
-local BUTTON_HEIGHT = math.max(FONT_SMALL_HEIGHT + 3 * 2, 25)
-local CLOSE_BUTTON_SIZE = 20
-local EDGE_PADDING = 12
 local ELEMENT_PADDING = 5
-local SECTION_PADDING = 20
-local SECTION_BORDER_PADDING = 5
 local TEXTS = {
     Activate = getText("UI_RemoteLC_Activate"),
     All = getText("UI_RemoteLC_All"),
@@ -79,6 +74,21 @@ end
 --     end
 -- end
 
+function RemoteLC_ControllerUI:new(player, controller)
+    local width = 275
+    local height = 300
+    if not controller.isRGB then height = height + 30 end
+    local playerModData = player:getModData()
+    if not playerModData.RemoteLC_ControllerUI_X or not playerModData.RemoteLC_ControllerUI_Y then
+        playerModData.RemoteLC_ControllerUI_X = getPlayerScreenLeft(player:getPlayerNum()) + (getPlayerScreenWidth(player:getPlayerNum()) - width) / 2
+        playerModData.RemoteLC_ControllerUI_Y = getPlayerScreenTop(player:getPlayerNum()) + (getPlayerScreenHeight(player:getPlayerNum()) - height) / 2
+    end
+    local o = ISPanelJoypad.new(self, playerModData.RemoteLC_ControllerUI_X, playerModData.RemoteLC_ControllerUI_Y, width, height)
+    o.controller = controller
+    RemoteLC_ControllerUI.instance[controller:getId()] = o
+    return o
+end
+
 function RemoteLC_ControllerUI:initialise()
     self.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
     self.backgroundColor = {r=0, g=0, b=0, a=1}
@@ -90,269 +100,28 @@ function RemoteLC_ControllerUI:initialise()
 
     ISPanelJoypad.initialise(self)
 
-    self.widths = {
-        ClearLights = textManager:MeasureStringX(UIFont.Small, TEXTS.ClearLights),
-        DirectLightControl = textManager:MeasureStringX(UIFont.Small, TEXTS.DirectLightControl),
-        LightShowStatus = textManager:MeasureStringX(UIFont.Small, TEXTS.LightShowStatus),
-        ScanForLights = textManager:MeasureStringX(UIFont.Small, TEXTS.ScanForLights),
-        ScannerModule = textManager:MeasureStringX(UIFont.Small, TEXTS.ScannerModule),
-        ToggleOff = textManager:MeasureStringX(UIFont.Small, TEXTS.ToggleOff),
-        ToggleOn = textManager:MeasureStringX(UIFont.Small, TEXTS.ToggleOn),
-        TotalLightsConnected = textManager:MeasureStringX(UIFont.Small, TEXTS.TotalLightsConnected),
-    }
-    self.halfSectionWidth = math.max(
-        self.widths.DirectLightControl,
-        self.widths.ScannerModule,
-        self.widths.ToggleOn,
-        self.widths.ToggleOff,
-        self.widths.ScanForLights,
-        self.widths.ClearLights
-    )
-    self.fullSectionWidth = self.halfSectionWidth * 2 + SECTION_PADDING
-
-    local sectionStartTop =
-        FONT_MEDIUM_HEIGHT + ELEMENT_PADDING + -- Title
-        FONT_SMALL_HEIGHT + ELEMENT_PADDING +  -- Total Lights
-        FONT_SMALL_HEIGHT + ELEMENT_PADDING +  -- Light Show Status
-        SECTION_PADDING +                      -- Padding under header
-        FONT_SMALL_HEIGHT + ELEMENT_PADDING    -- Section Titles
-
-    local columnTop = sectionStartTop
-    -- Toggle Section
-    local left = EDGE_PADDING
-    if self.isRGB then
-        self.selectColorButton = ISButton:new(left, columnTop, self.halfSectionWidth, BUTTON_HEIGHT, TEXTS.Open, self)
-        self.selectColorButton.anchorLeft = true
-        self.selectColorButton.anchorTop = true
-        self.selectColorButton:setOnClick(RemoteLC_ControllerUI.selectColor, self)
-        self.selectColorButton:initialise()
-        self.selectColorButton:instantiate()
-        self.selectColorButton.borderColor = self.buttonBorderColor
-        self:addChild(self.selectColorButton)
-        columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-    else
-        self.colorComboBox = ISComboBox:new(left, columnTop, self.halfSectionWidth, BUTTON_HEIGHT)
-        self.colorComboBox:initialise()
-        self:addChild(self.colorComboBox)
-        columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-        self.brightnessLabelPosition = {x=left, y=columnTop}
-        columnTop = columnTop + FONT_SMALL_HEIGHT + ELEMENT_PADDING -- brightness Title
-
-        self.brightnessSlider = ISSliderPanel:new(left, columnTop, self.halfSectionWidth, 10, self, function(s,v) s:setBrightness(v/100) end)
-        self.brightnessSlider:initialise()
-        self.brightnessSlider:instantiate()
-        self.brightnessSlider:setCurrentValue(100)
-        self:addChild(self.brightnessSlider)
-        columnTop = columnTop + 10 + ELEMENT_PADDING
+    local window = GravyUI.Node(self.width, self.height)
+    local paddedWindow = window:pad(2)
+    local splits = {0.2, 0.4, 0.4}
+    if not self.isRGB then
+        splits = {0.2, 0.45, 0.35}
     end
+    local topSection, middleSection, bottomSection = paddedWindow:rows(splits)
+    self.titleSlot, self.infoSlot = topSection:rows({0.3, 0.7}, 5)
+    local middleLeftCol, middleRightCol = middleSection:cols(2, 5)
+    local directControlSection, scannerSection = middleLeftCol:pad(5), middleRightCol:pad(5)
+    local lightShowSection = bottomSection:pad(5)
 
-    self.toggleOnButton = ISButton:new(left, columnTop, self.halfSectionWidth, BUTTON_HEIGHT, TEXTS.ToggleOn, self)
-    self.toggleOnButton.anchorLeft = true
-    self.toggleOnButton.anchorTop = true
-    self.toggleOnButton:setOnClick(RemoteLC_ControllerUI.toggleLights, true)
-    self.toggleOnButton:initialise()
-    self.toggleOnButton:instantiate()
-    self.toggleOnButton.borderColor = self.buttonBorderColor
-    self:addChild(self.toggleOnButton)
-    columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-    self.toggleOffButton = ISButton:new(left, columnTop, self.halfSectionWidth, BUTTON_HEIGHT, TEXTS.ToggleOff, self)
-    self.toggleOffButton.anchorLeft = true
-    self.toggleOffButton.anchorTop = true
-    self.toggleOffButton:setOnClick(RemoteLC_ControllerUI.toggleLights, false)
-    self.toggleOffButton:initialise()
-    self.toggleOffButton:instantiate()
-    self.toggleOffButton.borderColor = self.buttonBorderColor
-    self:addChild(self.toggleOffButton)
-    columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-    local firstColumnBottom = columnTop
-
-    -- Scanner Section
-    left = EDGE_PADDING + self.halfSectionWidth + SECTION_PADDING
-    columnTop = sectionStartTop
-
-    self.rangeComboBox = ISComboBox:new(left, columnTop, self.halfSectionWidth, BUTTON_HEIGHT)
-    self.rangeComboBox:initialise()
-    self:addChild(self.rangeComboBox)
-    self.rangeComboBox:addOptionWithData(getText("UI_RemoteLC_Range", tostring(1)), 1)
-    self.rangeComboBox:addOptionWithData(getText("UI_RemoteLC_Range", tostring(5)), 5)
-    self.rangeComboBox:addOptionWithData(getText("UI_RemoteLC_Range", tostring(10)), 10)
-    self.rangeComboBox:addOptionWithData(getText("UI_RemoteLC_Range", tostring(20)), 20)
-    self.rangeComboBox.selected = 3
-    columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-    self.scanButton = ISButton:new(left, columnTop, self.halfSectionWidth, BUTTON_HEIGHT, TEXTS.ScanForLights, self)
-    self.scanButton.anchorLeft = true
-    self.scanButton.anchorTop = true
-    self.scanButton:setOnClick(RemoteLC_ControllerUI.scanForLights)
-    self.scanButton:initialise()
-    self.scanButton:instantiate()
-    self.scanButton.borderColor = self.buttonBorderColor
-    self:addChild(self.scanButton)
-    columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-    self.clearLightsButton = ISButton:new(left, columnTop, self.halfSectionWidth, BUTTON_HEIGHT, TEXTS.ClearLights, self)
-    self.clearLightsButton.anchorLeft = true
-    self.clearLightsButton.anchorTop = true
-    self.clearLightsButton:setOnClick(RemoteLC_ControllerUI.clearLights)
-    self.clearLightsButton:initialise()
-    self.clearLightsButton:instantiate()
-    self.clearLightsButton.borderColor = self.buttonBorderColor
-    self:addChild(self.clearLightsButton)
-    columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-    -- Light Show Section
-    local lightShowTotalWidth = self.fullSectionWidth
-    local lightShowColumnWidth = math.ceil((lightShowTotalWidth - ELEMENT_PADDING) / 2)
-    local lightShowSectionTop = math.max(columnTop, firstColumnBottom) + SECTION_PADDING + FONT_SMALL_HEIGHT + ELEMENT_PADDING
-    -- Light Show Left Column
-    left = EDGE_PADDING
-    columnTop = lightShowSectionTop
-    self.speedComboBox = ISComboBox:new(left, columnTop, lightShowColumnWidth, BUTTON_HEIGHT)
-    self.speedComboBox:initialise()
-    self:addChild(self.speedComboBox)
-    self.speedComboBox:addOptionWithData(TEXTS.Slow, "Slow")
-    self.speedComboBox:addOptionWithData(TEXTS.Normal, "Normal")
-    self.speedComboBox:addOptionWithData(TEXTS.Quick, "Quick")
-    columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-    self.startLightShowButton = ISButton:new(left, columnTop, lightShowColumnWidth, BUTTON_HEIGHT, TEXTS.Activate, self)
-    self.startLightShowButton.anchorTop = true
-    self.startLightShowButton:setOnClick(RemoteLC_ControllerUI.startLightShow)
-    self.startLightShowButton:initialise()
-    self.startLightShowButton:instantiate()
-    self.startLightShowButton.borderColor = self.buttonBorderColor
-    self:addChild(self.startLightShowButton)
-    columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-    self.pauseLightShowButton = ISButton:new(left, columnTop, lightShowColumnWidth, BUTTON_HEIGHT, TEXTS.Pause, self)
-    self.pauseLightShowButton.anchorTop = true
-    self.pauseLightShowButton:setOnClick(RemoteLC_ControllerUI.pauseLightShow)
-    self.pauseLightShowButton:initialise()
-    self.pauseLightShowButton:instantiate()
-    self.pauseLightShowButton.borderColor = self.buttonBorderColor
-    self:addChild(self.pauseLightShowButton)
-    columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-    -- Light Show Right Column
-    columnTop = lightShowSectionTop
-    left = EDGE_PADDING + lightShowColumnWidth + ELEMENT_PADDING
-    self.modeComboBox = ISComboBox:new(left, columnTop, lightShowColumnWidth, BUTTON_HEIGHT)
-    self.modeComboBox:initialise()
-    self:addChild(self.modeComboBox)
-    local modes
-    if self.isRGB then
-        modes = RemoteLC_LightShow.GetModes("RGB")
-    else
-        modes = RemoteLC_LightShow.GetModes("Standard")
-    end
-    for mode, modeData in pairs(modes) do
-        self.modeComboBox:addOptionWithData(modeData.name, mode)
-    end
-    columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-    self.stopLightShowButton = ISButton:new(left, columnTop, lightShowColumnWidth, BUTTON_HEIGHT, TEXTS.Deactivate, self)
-    self.stopLightShowButton.anchorTop = true
-    self.stopLightShowButton:setOnClick(RemoteLC_ControllerUI.stopLightShow)
-    self.stopLightShowButton:initialise()
-    self.stopLightShowButton:instantiate()
-    self.stopLightShowButton.borderColor = self.buttonBorderColor
-    self:addChild(self.stopLightShowButton)
-    columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-    self.resumeLightShowButton = ISButton:new(left, columnTop, lightShowColumnWidth, BUTTON_HEIGHT, TEXTS.Resume, self)
-    self.resumeLightShowButton.anchorTop = true
-    self.resumeLightShowButton:setOnClick(RemoteLC_ControllerUI.resumeLightShow)
-    self.resumeLightShowButton:initialise()
-    self.resumeLightShowButton:instantiate()
-    self.resumeLightShowButton.borderColor = self.buttonBorderColor
-    self:addChild(self.resumeLightShowButton)
-    columnTop = columnTop + BUTTON_HEIGHT + ELEMENT_PADDING
-
-    self:setWidth(EDGE_PADDING * 2 + self.fullSectionWidth)
-    self:setHeight(columnTop + EDGE_PADDING - ELEMENT_PADDING)
+    self:initDirectControl(directControlSection)
+    self:initScanner(scannerSection)
+    self:initLightShow(lightShowSection)
 
     if self.isRGB then
-        local rows = 10
-        local cols = 8
-        local colors = getColors(rows, cols)
-        self.colorPicker = ISColorPicker:new(0, 0, nil)
-        self.colorPicker:initialise()
-        self.colorPicker.keepOnScreen = true
-        self.colorPicker.buttonSize = 20
-        self.colorPicker:setColors(colors, cols, rows)
-        self.colorPicker.pickedTarget = self
-        self.colorPicker:setPickedFunc(RemoteLC_ControllerUI.setColor)
-        self.colorPicker.removeSelfOriginal = self.colorPicker.removeSelf
-        self.colorPicker.removeSelf = function() end -- we will close when needed
-        self.colorPicker.otherFct = true
-        self.colorPicker.originalOnMouseUp = self.colorPicker.onMouseUp
-        -- self.colorPicker.render = colorPickerRenderOverride
-        self.colorPicker.onMouseUp = function(self, dx, dy) -- prevents choosing color when not clicking on a color
-            local x = self:getMouseX()
-            local y = self:getMouseY()
-            local col = math.floor((x - self.borderSize) / self.buttonSize)
-            local row = math.floor((y - self.borderSize) / self.buttonSize)
-            if col < 0 then return true end
-            if col >= self.columns then return true end
-            if row < 0 then return true end
-            if row >= self.rows then return true end
-            return self:originalOnMouseUp(dx, dy)
-        end
-
-        -- make colorPicker move with the UI window
-        self.onMouseMoveOriginal = self.onMouseMove
-        self.onMouseMove = function(self, x, y)
-            self:onMouseMoveOriginal(x, y)
-            if self.colorPicker then
-                self.colorPicker:setX(self:getX() - self.colorPicker:getWidth())
-                self.colorPicker:setY(self:getY(0))
-            end
-        end
-
-        local colorSliderTop = self.colorPicker.height + 2
-        local colorSliderLeft = self.colorPicker.borderSize
-        local colorSliderWidth = self.colorPicker.width - self.colorPicker.borderSize * 2
-        local colorSliderHeight = 10
-
-        self.colorSliderR = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, colorSliderHeight, self, function(s,c) s:setColorCustom("r", c/100) end)
-        self.colorSliderR:initialise()
-        self.colorSliderR:instantiate()
-        self.colorSliderR.sliderColor = {r=0.8, g=0.0, b=0.0, a=1.0}
-        self.colorSliderR.sliderMouseOverColor = {r=1.0, g=0.0, b=0.0, a=1.0}
-        self.colorSliderR:setDoButtons(false)
-        self.colorPicker:addChild(self.colorSliderR)
-        colorSliderTop = colorSliderTop + colorSliderHeight + ELEMENT_PADDING
-
-        self.colorSliderG = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, colorSliderHeight, self, function(s,c) s:setColorCustom("g", c/100) end)
-        self.colorSliderG:initialise()
-        self.colorSliderG:instantiate()
-        self.colorSliderG.sliderColor = {r=0.0, g=0.8, b=0.0, a=1.0}
-        self.colorSliderG.sliderMouseOverColor = {r=0.0, g=1.0, b=0.0, a=1.0}
-        self.colorSliderG:setDoButtons(false)
-        self.colorPicker:addChild(self.colorSliderG)
-        colorSliderTop = colorSliderTop + colorSliderHeight + ELEMENT_PADDING
-
-        self.colorSliderB = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, colorSliderHeight, self, function(s,c) s:setColorCustom("b", c/100) end)
-        self.colorSliderB:initialise()
-        self.colorSliderB:instantiate()
-        self.colorSliderB.sliderColor = {r=0.2, g=0.2, b=0.9, a=1.0}
-        self.colorSliderB.sliderMouseOverColor = {r=0.2, g=0.2, b=1.0, a=1.0}
-        self.colorSliderB:setDoButtons(false)
-        self.colorPicker:addChild(self.colorSliderB)
-        colorSliderTop = colorSliderTop + colorSliderHeight + ELEMENT_PADDING
-
-        self.colorPicker:setHeight(colorSliderTop + self.colorPicker.borderSize)
+        self:initColorPicker()
     end
 
     -- Close Button
-    self.closeButton = ISButton:new(self:getWidth() - CLOSE_BUTTON_SIZE, 0, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE, "X", self, RemoteLC_ControllerUI.close)
-    self.closeButton.anchorLeft = true
-    self.closeButton.anchorTop = true
-    self.closeButton:initialise()
-    self.closeButton:instantiate()
+    self.closeButton = window:corner("topRight", 20, 20):makeButton("X", self, RemoteLC_ControllerUI.close)
     self.closeButton.borderColor = self.borderColor
     self:addChild(self.closeButton)
 
@@ -364,6 +133,181 @@ function RemoteLC_ControllerUI:initialise()
     self:updateUI()
 
     self.intialized = true
+end
+
+--- @param node GravyUI.Node
+function RemoteLC_ControllerUI:initDirectControl(node)
+    self.directControlSection = node
+    self.directControlTitleNode, node = node:pad(5):rows({12, 1}, 5)
+    local selectorNode, brightnessNode, toggleOnNode, toggleOffNode
+
+    if self.isRGB then
+        selectorNode,toggleOnNode, toggleOffNode = node:rows(3, 5)
+        self.selectColorButton = selectorNode:makeButton(TEXTS.Open, self, RemoteLC_ControllerUI.selectColor)
+        self.selectColorButton.borderColor = self.buttonBorderColor
+        self:addChild(self.selectColorButton)
+    else
+        selectorNode, brightnessNode, toggleOnNode, toggleOffNode = node:rows({0.2, 0.4, 0.2, 0.2}, 5)
+        self.colorComboBox = selectorNode:makeComboBox()
+        self:addChild(self.colorComboBox)
+
+        local brightnessTitleNode, brightnessSliderNode = brightnessNode:rows(2, 2)
+        self.brightnessTitleSlot = brightnessTitleNode
+
+        self.brightnessSlider = brightnessSliderNode:makeSlider(self, function(s,v) s:setBrightness(v) end)
+        self.brightnessSlider:setCurrentValue(100)
+        self:addChild(self.brightnessSlider)
+    end
+
+    self.toggleOnButton = toggleOnNode:makeButton(TEXTS.ToggleOn, self, RemoteLC_ControllerUI.toggleLights, {true})
+    self.toggleOnButton.borderColor = self.buttonBorderColor
+    self:addChild(self.toggleOnButton)
+
+    self.toggleOffButton = toggleOffNode:makeButton(TEXTS.ToggleOff, self, RemoteLC_ControllerUI.toggleLights, {false})
+    self.toggleOffButton.borderColor = self.buttonBorderColor
+    self:addChild(self.toggleOffButton)
+end
+
+--- @param node GravyUI.Node
+function RemoteLC_ControllerUI:initScanner(node)
+    self.scannerSection = node
+    self.scannerTitleNode, node = node:pad(5):rows({12, 1}, 5)
+    local rangeNode, findNode, clearNode = node:rows(3, 5)
+
+    self.rangeComboBox = rangeNode:makeComboBox()
+    self:addChild(self.rangeComboBox)
+    self.rangeComboBox:addOptionWithData(getText("UI_RemoteLC_Range", tostring(1)), 1)
+    self.rangeComboBox:addOptionWithData(getText("UI_RemoteLC_Range", tostring(5)), 5)
+    self.rangeComboBox:addOptionWithData(getText("UI_RemoteLC_Range", tostring(10)), 10)
+    self.rangeComboBox:addOptionWithData(getText("UI_RemoteLC_Range", tostring(20)), 20)
+    self.rangeComboBox.selected = 3
+
+    self.scanButton = findNode:makeButton(TEXTS.ScanForLights, self, RemoteLC_ControllerUI.scanForLights)
+    self.scanButton.borderColor = self.buttonBorderColor
+    self:addChild(self.scanButton)
+
+    self.clearLightsButton = clearNode:makeButton(TEXTS.ClearLights, self, RemoteLC_ControllerUI.clearLights)
+    self.clearLightsButton.borderColor = self.buttonBorderColor
+    self:addChild(self.clearLightsButton)
+end
+
+--- @param node GravyUI.Node
+function RemoteLC_ControllerUI:initLightShow(node)
+    self.lightShowSection = node
+    local titleNode, bodyNode = node:pad(5):rows({20, 1}, 5)
+    self.lightShowTitleNode = titleNode
+    local row1, row2, row3 = bodyNode:grid(3, 2, 5, 5)
+    local speedNode, modeNode = GravyUI.unpack(row1)
+    local activateNode, deactiveNode = GravyUI.unpack(row2)
+    local pauseNode, resumeNode = GravyUI.unpack(row3)
+
+    self.speedComboBox = speedNode:makeComboBox()
+    self:addChild(self.speedComboBox)
+    self.speedComboBox:addOptionWithData(TEXTS.Slow, "Slow")
+    self.speedComboBox:addOptionWithData(TEXTS.Normal, "Normal")
+    self.speedComboBox:addOptionWithData(TEXTS.Quick, "Quick")
+
+    self.startLightShowButton = activateNode:makeButton(TEXTS.Activate, self, RemoteLC_ControllerUI.startLightShow)
+    self.startLightShowButton.borderColor = self.buttonBorderColor
+    self:addChild(self.startLightShowButton)
+
+    self.stopLightShowButton = deactiveNode:makeButton(TEXTS.Deactivate, self, RemoteLC_ControllerUI.stopLightShow)
+    self.stopLightShowButton.borderColor = self.buttonBorderColor
+    self:addChild(self.stopLightShowButton)
+
+    self.pauseLightShowButton = pauseNode:makeButton(TEXTS.Pause, self, RemoteLC_ControllerUI.pauseLightShow)
+    self.pauseLightShowButton.borderColor = self.buttonBorderColor
+    self:addChild(self.pauseLightShowButton)
+
+    self.resumeLightShowButton = resumeNode:makeButton(TEXTS.Resume, self, RemoteLC_ControllerUI.resumeLightShow)
+    self.resumeLightShowButton.borderColor = self.buttonBorderColor
+    self:addChild(self.resumeLightShowButton)
+
+    self.modeComboBox = modeNode:makeComboBox()
+    self:addChild(self.modeComboBox)
+    local modes
+    if self.isRGB then
+        modes = RemoteLC_LightShow.GetModes("RGB")
+    else
+        modes = RemoteLC_LightShow.GetModes("Standard")
+    end
+    for mode, modeData in pairs(modes) do
+        self.modeComboBox:addOptionWithData(modeData.name, mode)
+    end
+end
+
+-- TODO: Clean Up, maybe move to a module
+function RemoteLC_ControllerUI:initColorPicker()
+    local rows = 10
+    local cols = 8
+    local colors = getColors(rows, cols)
+    self.colorPicker = ISColorPicker:new(0, 0, nil)
+    self.colorPicker:initialise()
+    self.colorPicker.keepOnScreen = true
+    self.colorPicker.buttonSize = 20
+    self.colorPicker:setColors(colors, cols, rows)
+    self.colorPicker.pickedTarget = self
+    self.colorPicker:setPickedFunc(RemoteLC_ControllerUI.setColor)
+    self.colorPicker.removeSelfOriginal = self.colorPicker.removeSelf
+    self.colorPicker.removeSelf = function() end -- we will close when needed
+    self.colorPicker.otherFct = true
+    self.colorPicker.originalOnMouseUp = self.colorPicker.onMouseUp
+    -- self.colorPicker.render = colorPickerRenderOverride
+    self.colorPicker.onMouseUp = function(self, dx, dy) -- prevents choosing color when not clicking on a color
+        local x = self:getMouseX()
+        local y = self:getMouseY()
+        local col = math.floor((x - self.borderSize) / self.buttonSize)
+        local row = math.floor((y - self.borderSize) / self.buttonSize)
+        if col < 0 then return true end
+        if col >= self.columns then return true end
+        if row < 0 then return true end
+        if row >= self.rows then return true end
+        return self:originalOnMouseUp(dx, dy)
+    end
+
+    -- make colorPicker move with the UI window
+    self.onMouseMoveOriginal = self.onMouseMove
+    self.onMouseMove = function(self, x, y)
+        self:onMouseMoveOriginal(x, y)
+        if self.colorPicker then
+            self.colorPicker:setX(self:getX() - self.colorPicker:getWidth())
+            self.colorPicker:setY(self:getY(0))
+        end
+    end
+
+    local colorSliderTop = self.colorPicker.height + 2
+    local colorSliderLeft = self.colorPicker.borderSize
+    local colorSliderWidth = self.colorPicker.width - self.colorPicker.borderSize * 2
+    local colorSliderHeight = 10
+
+    self.colorSliderR = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, colorSliderHeight, self, function(s,c) s:setColorCustom("r", c/100) end)
+    self.colorSliderR:initialise()
+    self.colorSliderR:instantiate()
+    self.colorSliderR.sliderColor = {r=0.8, g=0.0, b=0.0, a=1.0}
+    self.colorSliderR.sliderMouseOverColor = {r=1.0, g=0.0, b=0.0, a=1.0}
+    self.colorSliderR:setDoButtons(false)
+    self.colorPicker:addChild(self.colorSliderR)
+    colorSliderTop = colorSliderTop + colorSliderHeight + ELEMENT_PADDING
+
+    self.colorSliderG = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, colorSliderHeight, self, function(s,c) s:setColorCustom("g", c/100) end)
+    self.colorSliderG:initialise()
+    self.colorSliderG:instantiate()
+    self.colorSliderG.sliderColor = {r=0.0, g=0.8, b=0.0, a=1.0}
+    self.colorSliderG.sliderMouseOverColor = {r=0.0, g=1.0, b=0.0, a=1.0}
+    self.colorSliderG:setDoButtons(false)
+    self.colorPicker:addChild(self.colorSliderG)
+    colorSliderTop = colorSliderTop + colorSliderHeight + ELEMENT_PADDING
+
+    self.colorSliderB = ISSliderPanel:new(colorSliderLeft, colorSliderTop, colorSliderWidth, colorSliderHeight, self, function(s,c) s:setColorCustom("b", c/100) end)
+    self.colorSliderB:initialise()
+    self.colorSliderB:instantiate()
+    self.colorSliderB.sliderColor = {r=0.2, g=0.2, b=0.9, a=1.0}
+    self.colorSliderB.sliderMouseOverColor = {r=0.2, g=0.2, b=1.0, a=1.0}
+    self.colorSliderB:setDoButtons(false)
+    self.colorPicker:addChild(self.colorSliderB)
+    colorSliderTop = colorSliderTop + colorSliderHeight + ELEMENT_PADDING
+
+    self.colorPicker:setHeight(colorSliderTop + self.colorPicker.borderSize)
 end
 
 function RemoteLC_ControllerUI:prerender()
@@ -389,60 +333,46 @@ function RemoteLC_ControllerUI:prerender()
         end
     end
 
+    -- window
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b)
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
 
-    local topSectionLeft, topSectionTop
     if self.isRGB then
         if TEXTS.RGBRemoteLightsController == "RGB Lights Controller" then -- something special for english
             local textManager = getTextManager()
-            local fullWidth = textManager:MeasureStringX(UIFont.Medium, "RGB Lights Controller")
-            local start = self:getWidth() / 2 - fullWidth / 2
+            local fullTextWidth = textManager:MeasureStringX(UIFont.Medium, "RGB Lights Controller")
+            local start = self.titleSlot.left + self.titleSlot.width/2 - fullTextWidth/2
             local gLeft = start + textManager:MeasureStringX(UIFont.Medium, "R")
             local bLeft = gLeft + textManager:MeasureStringX(UIFont.Medium, "G")
             local remainderLeft = bLeft + textManager:MeasureStringX(UIFont.Medium, "B") + 3
-            self:drawText("R", start, EDGE_PADDING, 1, 0, 0, 1, UIFont.Medium)
-            self:drawText("G", gLeft, EDGE_PADDING, 0, 1, 0, 1, UIFont.Medium)
-            self:drawText("B", bLeft, EDGE_PADDING, 0.2, 0.2, 1, 1, UIFont.Medium)
-            self:drawText(" Lights Controller", remainderLeft, EDGE_PADDING, 1, 1, 1, 1, UIFont.Medium)
+            self:drawText("R", start, self.titleSlot.top, 1, 0, 0, 1, UIFont.Medium)
+            self:drawText("G", gLeft, self.titleSlot.top, 0, 1, 0, 1, UIFont.Medium)
+            self:drawText("B", bLeft, self.titleSlot.top, 0.2, 0.2, 1, 1, UIFont.Medium)
+            self:drawText(" Lights Controller", remainderLeft, self.titleSlot.top, 1, 1, 1, 1, UIFont.Medium)
         else
-            self:drawTextCentre(TEXTS.RGBRemoteLightsController, self:getWidth() / 2, EDGE_PADDING, 1, 1, 1, 1, UIFont.Medium)
+            self:drawTextCentre(TEXTS.RGBRemoteLightsController, self.titleSlot.left + self.titleSlot.width/2, self.titleSlot.top, 1, 1, 1, 1, UIFont.Medium)
         end
-
-        topSectionLeft = self.selectColorButton:getX() - SECTION_BORDER_PADDING
-        topSectionTop = self.selectColorButton:getY() - ELEMENT_PADDING - FONT_SMALL_HEIGHT - SECTION_BORDER_PADDING
     else
-        self:drawTextCentre(TEXTS.RemoteLightsController, self:getWidth() / 2, EDGE_PADDING, 1, 1, 1, 1, UIFont.Medium)
+        self:drawTextCentre(TEXTS.RemoteLightsController, self.titleSlot.left + self.titleSlot.width/2, self.titleSlot.top, 1, 1, 1, 1, UIFont.Medium)
 
-        topSectionLeft = self.colorComboBox:getX() - SECTION_BORDER_PADDING
-        topSectionTop = self.colorComboBox:getY() - ELEMENT_PADDING - FONT_SMALL_HEIGHT - SECTION_BORDER_PADDING
     end
 
-    local left = topSectionLeft
-    local top = topSectionTop
-
-    local width = self.halfSectionWidth + SECTION_BORDER_PADDING*2
-    local height = self.toggleOffButton:getY() + self.toggleOffButton:getHeight() - top + SECTION_BORDER_PADDING
-    self:drawRect(left, top, width, height, self.sectionBackgroundColor.a, self.sectionBackgroundColor.r, self.sectionBackgroundColor.g, self.sectionBackgroundColor.b)
-    self:drawRectBorder(left, top, width, height, self.sectionBorderColor.a, self.sectionBorderColor.r, self.sectionBorderColor.g, self.sectionBorderColor.b)
-    self:drawTextCentre(TEXTS.DirectLightControl, left + width/2, top + SECTION_BORDER_PADDING, 1.0, 1.0, 1.0, 1.0, UIFont.Small)
+    self.directControlSection:drawRect(self, self.sectionBackgroundColor.a, self.sectionBackgroundColor.r, self.sectionBackgroundColor.g, self.sectionBackgroundColor.b)
+    self.directControlSection:drawRectBorder(self, self.sectionBorderColor.a, self.sectionBorderColor.r, self.sectionBorderColor.g, self.sectionBorderColor.b)
+    self:drawTextCentre(TEXTS.DirectLightControl, self.directControlTitleNode.left + self.directControlTitleNode.width/2, self.directControlTitleNode.top, 1.0, 1.0, 1.0, 1.0, UIFont.Small)
     if not self.isRGB then
-        self:drawText(TEXTS.Brightness, self.brightnessLabelPosition.x, self.brightnessLabelPosition.y, 1.0, 1.0, 1.0, 1.0, UIFont.Small)
+        self:drawText(TEXTS.Brightness, self.brightnessTitleSlot.left, self.brightnessTitleSlot.top, 1.0, 1.0, 1.0, 1.0, UIFont.Small)
     end
 
-    left = self.rangeComboBox:getX() - SECTION_BORDER_PADDING
-    local height = self.clearLightsButton:getY() + self.clearLightsButton:getHeight() - top + SECTION_BORDER_PADDING
-    self:drawRect(left, top, width, height, self.sectionBackgroundColor.a, self.sectionBackgroundColor.r, self.sectionBackgroundColor.g, self.sectionBackgroundColor.b)
-    self:drawRectBorder(left, top, width, height, self.sectionBorderColor.a, self.sectionBorderColor.r, self.sectionBorderColor.g, self.sectionBorderColor.b)
-    self:drawTextCentre(TEXTS.ScannerModule, left + width/2, top + 3, 1.0, 1.0, 1.0, 1.0, UIFont.Small)
 
-    left = self.speedComboBox:getX() - SECTION_BORDER_PADDING
-    top = self.speedComboBox:getY() - ELEMENT_PADDING - FONT_SMALL_HEIGHT - SECTION_BORDER_PADDING
-    width = self.fullSectionWidth + SECTION_BORDER_PADDING*2
-    height = self.pauseLightShowButton:getY() + self.pauseLightShowButton:getHeight() - top + SECTION_BORDER_PADDING
-    self:drawRect(left, top, width, height, self.sectionBackgroundColor.a, self.sectionBackgroundColor.r, self.sectionBackgroundColor.g, self.sectionBackgroundColor.b)
-    self:drawRectBorder(left, top, width, height, self.sectionBorderColor.a, self.sectionBorderColor.r, self.sectionBorderColor.g, self.sectionBorderColor.b)
-    self:drawTextCentre(TEXTS.LightShowModule, left + width/2, top + SECTION_BORDER_PADDING, 1.0, 1.0, 1.0, 1.0, UIFont.Small)
+    self.scannerSection:drawRect(self, self.sectionBackgroundColor.a, self.sectionBackgroundColor.r, self.sectionBackgroundColor.g, self.sectionBackgroundColor.b)
+    self.scannerSection:drawRectBorder(self, self.sectionBorderColor.a, self.sectionBorderColor.r, self.sectionBorderColor.g, self.sectionBorderColor.b)
+    self:drawTextCentre(TEXTS.ScannerModule, self.scannerTitleNode.left + self.scannerTitleNode.width/2, self.scannerTitleNode.top, 1.0, 1.0, 1.0, 1.0, UIFont.Small)
+
+
+    self.lightShowSection:drawRect(self, self.sectionBackgroundColor.a, self.sectionBackgroundColor.r, self.sectionBackgroundColor.g, self.sectionBackgroundColor.b)
+    self.lightShowSection:drawRectBorder(self, self.sectionBorderColor.a, self.sectionBorderColor.r, self.sectionBorderColor.g, self.sectionBorderColor.b)
+    self:drawTextCentre(TEXTS.LightShowModule, self.lightShowTitleNode.left + self.lightShowTitleNode.width/2, self.lightShowTitleNode.top, 1.0, 1.0, 1.0, 1.0, UIFont.Small)
 end
 
 function RemoteLC_ControllerUI:render()
@@ -461,14 +391,14 @@ function RemoteLC_ControllerUI:render()
         status = TEXTS.Off
     end
 
+    local slotOne, slotTwo = self.infoSlot:pad(5, 0):rows(2, 2)
+    local textWidth = textManager:MeasureStringX(UIFont.Small, TEXTS.TotalLightsConnected)
+    self:drawText(TEXTS.TotalLightsConnected, slotOne.left, slotOne.top, 1, 1, 1, 0.5, UIFont.Small)
+    self:drawText(countOfLights, slotOne.left + textWidth, slotOne.top, 1, 1, 1, 0.8, UIFont.Small)
 
-    local top = EDGE_PADDING + FONT_MEDIUM_HEIGHT + ELEMENT_PADDING
-    self:drawText(TEXTS.TotalLightsConnected, EDGE_PADDING, top, 1, 1, 1, 0.5, UIFont.Small)
-    self:drawText(countOfLights, EDGE_PADDING + self.widths.TotalLightsConnected, top, 1, 1, 1, 0.8, UIFont.Small)
-
-    top = EDGE_PADDING + FONT_MEDIUM_HEIGHT + FONT_SMALL_HEIGHT + ELEMENT_PADDING*2
-    self:drawText(TEXTS.LightShowStatus, EDGE_PADDING, top, 1, 1, 1, 0.5, UIFont.Small)
-    self:drawText(status, EDGE_PADDING + self.widths.LightShowStatus, top, 1, 1, 1, 0.8, UIFont.Small)
+    local textWidth = textManager:MeasureStringX(UIFont.Small, TEXTS.LightShowStatus)
+    self:drawText(TEXTS.LightShowStatus, slotTwo.left, slotTwo.top, 1, 1, 1, 0.5, UIFont.Small)
+    self:drawText(status, slotTwo.left + textWidth, slotTwo.top, 1, 1, 1, 0.8, UIFont.Small)
 end
 
 function RemoteLC_ControllerUI:updateColors()
@@ -658,6 +588,14 @@ function RemoteLC_ControllerUI:resumeLightShow()
 end
 
 function RemoteLC_ControllerUI:setBrightness(value)
+    value = value / 100
+
+    if value > 1.0 then
+        value = 1.0
+    elseif value < 0 then
+        value = 0.0
+    end
+
     if not self.intialized or self.isRGB then
         return
     end
@@ -717,18 +655,4 @@ function RemoteLC_ControllerUI:close()
     if JoypadState.players[playerNum+1] then
         setJoypadFocus(playerNum, nil)
     end
-end
-
-function RemoteLC_ControllerUI:new(player, controller)
-    local width = 200
-    local height = 400
-    local playerModData = player:getModData()
-    if not playerModData.RemoteLC_ControllerUI_X or not playerModData.RemoteLC_ControllerUI_Y then
-        playerModData.RemoteLC_ControllerUI_X = getPlayerScreenLeft(player:getPlayerNum()) + (getPlayerScreenWidth(player:getPlayerNum()) - width) / 2
-        playerModData.RemoteLC_ControllerUI_Y = getPlayerScreenTop(player:getPlayerNum()) + (getPlayerScreenHeight(player:getPlayerNum()) - height) / 2
-    end
-    local o = ISPanelJoypad.new(self, playerModData.RemoteLC_ControllerUI_X, playerModData.RemoteLC_ControllerUI_Y, width, height)
-    o.controller = controller
-    RemoteLC_ControllerUI.instance[controller:getId()] = o
-    return o
 end

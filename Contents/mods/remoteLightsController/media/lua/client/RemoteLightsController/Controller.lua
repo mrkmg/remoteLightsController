@@ -230,6 +230,9 @@ end
 
 function RemoteLC_Controller:setBrightness(brightness)
     local modData = self.controller:getModData()
+    if brightness > 0.99 then
+        brightness = 1.0
+    end
     modData.RemoteLC_Brightness = brightness
     self:_updateName()
 end

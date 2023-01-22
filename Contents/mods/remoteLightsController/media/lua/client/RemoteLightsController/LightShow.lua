@@ -1,3 +1,6 @@
+require "RemoteLightsController/Config"
+
+RemoteLC_Options = RemoteLC_Options or {}
 RemoteLC_LightShow = RemoteLC_LightShow or {}
 RemoteLC_LightShow.Modes = RemoteLC_LightShow.Modes or {}
 RemoteLC_LightShow.Instances = {}
@@ -70,7 +73,7 @@ function RemoteLC_LightShow:new(id, lightShowArgs, runningTime)
     return o
 end
 
-function RemoteLC_LightShow:initialize(lightShowArgs, runningTime)
+function RemoteLC_LightShow:initialize(lightShowArgs, runningTime)    
     local ts = getTimestampMs()
     self.data.isOwner = false
     self.data.isPaused = false
@@ -99,14 +102,20 @@ function RemoteLC_LightShow:initialize(lightShowArgs, runningTime)
         return
     end
 
-    local player = getPlayer()
+    local player = getPlayer()    
     if RemoteLC_Utilities.IsPlayerNearLightDatas(player, self.data.lightDatas) then
-        RemoteLC_Utilities.SetLightsStateFromData(getPlayer():getCell(), self.data.lightDatas, false, true)
-        self.data.runner(self, self.data.runnerData)
+
+        if RemoteLC_Options.light_sensitivity then
+            RemoteLC_Utilities.SetLightsStateFromData(getPlayer():getCell(), self.data.lightDatas, true, true)
+        else
+            RemoteLC_Utilities.SetLightsStateFromData(getPlayer():getCell(), self.data.lightDatas, false, true)
+            self.data.runner(self, self.data.runnerData)
+        end
     end
 end
 
 function RemoteLC_LightShow:update()
+    if RemoteLC_Options.light_sensitivity then return end
     local ts = getTimestampMs()
     local player = getPlayer()
 

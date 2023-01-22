@@ -39,4 +39,6 @@ UI_EN = {
     UI_RemoteLC_Close = "Close",
     UI_RemoteLC_Range = "Range: %1",
     UI_RemoteLC_Brightness = "Brightness:",
+    UI_RemoteLC_LightSensitivity = "Light Sensitivity Mode",
+    UI_RemoteLC_LightSensitivity_Tooltip = "Enabled this to disable light shows entirely. This option is for people with sensitivity to flashing or strobing lights.",
 }
