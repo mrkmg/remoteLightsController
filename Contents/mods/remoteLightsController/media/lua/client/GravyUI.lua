@@ -1,11 +1,13 @@
-if GravyUI and GravyUI.Version >= 1.0 then return end
+if GravyUI and GravyUI.Version >= 1.1 then return end
 
 require "ISUI/ISComboBox"
 require "ISUI/ISButton"
-require "ISUI/ISSliderPanel"
+require "RadioCom/ISUIRadio/ISSliderPanel"
+require "ISUI/ISTextEntryBox"
+require "ISUI/ISTickBox"
 
 GravyUI = {}
-GravyUI.Version = 1.0
+GravyUI.Version = 1.1
 
 --- @class Vec2
 --- @field x number
@@ -277,6 +279,13 @@ function Node:radial(angle, xDistance, yDistance)
     return self:offset(xs, ys)
 end
 
+--- @param x number
+--- @param y number
+--- @return boolean
+function Node:contains(x, y)
+    return self.left <= x and x <= self.right and self.top <= y and y <= self.bottom
+end
+
 --- @param text string
 --- @param target any|nil
 --- @param callback function|nil
@@ -312,6 +321,18 @@ function Node:makeComboBox(target, callback)
     return comboBox
 end
 
+--- @param title string
+function Node:makeTextBox(title)
+    local textBox = ISTextEntryBox:new(title, self.left, self.top, self.width, self.height)
+    textBox.anchorTop = true
+    textBox.anchorLeft = true
+    textBox:initialise()
+    return textBox
+end
+
+function Node:makeTickBox(target, callback)
+    return ISTickBox:new(self.left, self.top, self.width, self.height, "", target, callback)
+end
 
 function Node:drawRect(uiElement, a, r, g, b)
     uiElement:drawRect(self.left, self.top, self.width, self.height, a, r, g, b)

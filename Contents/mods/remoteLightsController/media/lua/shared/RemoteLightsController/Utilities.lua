@@ -199,6 +199,7 @@ function RemoteLC_Utilities.SetLightStateFromData(cell, lightData, state, onlyCl
     end
 
     if lightData.bulbColor ~= "RGB" then
+        print("Brightness " .. tostring(lightData.r * state) .. "," .. tostring(lightData.g * state) .. "," .. tostring(lightData.b * state))
         light:setPrimaryR(lightData.r * state)
         light:setPrimaryG(lightData.g * state)
         light:setPrimaryB(lightData.b * state)
@@ -207,6 +208,7 @@ function RemoteLC_Utilities.SetLightStateFromData(cell, lightData, state, onlyCl
     if not isServer() then
         light:switchLight(true)
     else
+        light:syncCustomizedSettings(nil)
         light:syncIsoObject(true, 1, nil)
     end
 end

@@ -1,38 +1,25 @@
 require 'Items/Distributions'
-Distributions = Distributions or {};
+SuburbsDistributions = SuburbsDistributions or {};
 
-table.insert(Distributions[1].all.Outfit_FiremanStripper.items, "RemoteLightsController.RemoteLightsController")
-table.insert(Distributions[1].all.Outfit_FiremanStripper.items, 1)
+local function addDist(name, type, val)
+    if not SuburbsDistributions or not SuburbsDistributions or not SuburbsDistributions.all then return end
 
-table.insert(Distributions[1].all.Outfit_PoliceStripper.items, "RemoteLightsController.RemoteLightsController")
-table.insert(Distributions[1].all.Outfit_PoliceStripper.items, 1)
+    if SuburbsDistributions.all[name] then
+        table.insert(SuburbsDistributions.all[name].items, type)
+        table.insert(SuburbsDistributions.all[name].items, val)
+    end
+end
 
-table.insert(Distributions[1].all.Outfit_Stripper.items, "RemoteLightsController.RemoteLightsController")
-table.insert(Distributions[1].all.Outfit_Stripper.items, 1)
+addDist("Outfit_FiremanStripper", "RemoteLightsController.RemoteLightsController", 1)
+addDist("Outfit_PoliceStripper", "RemoteLightsController.RemoteLightsController", 1)
+addDist("Outfit_Stripper", "RemoteLightsController.RemoteLightsController", 1)
+addDist("Outfit_StripperBlack", "RemoteLightsController.RemoteLightsController", 1)
+addDist("Outfit_StripperNaked", "RemoteLightsController.RemoteLightsController", 1)
+addDist("Outfit_StripperPink", "RemoteLightsController.RemoteLightsController", 1)
 
-table.insert(Distributions[1].all.Outfit_StripperBlack.items, "RemoteLightsController.RemoteLightsController")
-table.insert(Distributions[1].all.Outfit_StripperBlack.items, 1)
-
-table.insert(Distributions[1].all.Outfit_StripperNaked.items, "RemoteLightsController.RemoteLightsController")
-table.insert(Distributions[1].all.Outfit_StripperNaked.items, 1)
-
-table.insert(Distributions[1].all.Outfit_StripperPink.items, "RemoteLightsController.RemoteLightsController")
-table.insert(Distributions[1].all.Outfit_StripperPink.items, 1)
-
-table.insert(Distributions[1].all.Outfit_FiremanStripper.items, "RemoteLightsController.RGBRemoteLightsController")
-table.insert(Distributions[1].all.Outfit_FiremanStripper.items, 0.25)
-
-table.insert(Distributions[1].all.Outfit_PoliceStripper.items, "RemoteLightsController.RGBRemoteLightsController")
-table.insert(Distributions[1].all.Outfit_PoliceStripper.items, 0.25)
-
-table.insert(Distributions[1].all.Outfit_Stripper.items, "RemoteLightsController.RGBRemoteLightsController")
-table.insert(Distributions[1].all.Outfit_Stripper.items, 0.25)
-
-table.insert(Distributions[1].all.Outfit_StripperBlack.items, "RemoteLightsController.RGBRemoteLightsController")
-table.insert(Distributions[1].all.Outfit_StripperBlack.items, 0.25)
-
-table.insert(Distributions[1].all.Outfit_StripperNaked.items, "RemoteLightsController.RGBRemoteLightsController")
-table.insert(Distributions[1].all.Outfit_StripperNaked.items, 0.25)
-
-table.insert(Distributions[1].all.Outfit_StripperPink.items, "RemoteLightsController.RGBRemoteLightsController")
-table.insert(Distributions[1].all.Outfit_StripperPink.items, 0.25)
+addDist("Outfit_FiremanStripper", "RemoteLightsController.RGBRemoteLightsController", 0.25)
+addDist("Outfit_PoliceStripper", "RemoteLightsController.RGBRemoteLightsController", 0.25)
+addDist("Outfit_Stripper", "RemoteLightsController.RGBRemoteLightsController", 0.25)
+addDist("Outfit_StripperBlack", "RemoteLightsController.RGBRemoteLightsController", 0.25)
+addDist("Outfit_StripperNaked", "RemoteLightsController.RGBRemoteLightsController", 0.25)
+addDist("Outfit_StripperPink", "RemoteLightsController.RGBRemoteLightsController", 0.25)
